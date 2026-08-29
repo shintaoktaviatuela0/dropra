@@ -1,0 +1,14 @@
+# Railway deployment configuration for Dropra.
+# Railway auto-detects the Dockerfile; this file wires up the healthcheck
+# and restart policy.
+
+[build]
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+startCommand = "node dist/main.js"
+healthcheckPath = "/health"
+healthcheckTimeout = 120
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 10

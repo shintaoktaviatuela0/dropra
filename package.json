@@ -1,42 +1,45 @@
 {
-	"name": "chibisafe",
-	"version": "6.0.4",
-	"description": "Blazing fast file uploader and bunker written in node! 🚀",
+	"name": "dropra",
+	"version": "1.0.0",
+	"description": "Dropra — Drop. Share. Done. A simple, fast, self-hosted file sharing platform.",
 	"private": true,
-	"scripts": {
-		"build": "turbo run build",
-		"dev": "turbo run dev",
-		"lint": "turbo run lint",
-		"format": "turbo run format",
-		"postinstall": "is-ci || husky",
-		"generate": "yarn workspace @chibisafe/backend generate",
-		"migrate": "yarn workspace @chibisafe/backend migrate",
-		"start": "yarn workspace @chibisafe/backend start",
-		"migrate-v4-to-v5": "yarn workspace @chibisafe/migration start",
-		"dev:backend": "yarn workspace @chibisafe/backend dev",
-		"dev:frontend": "yarn workspace @chibisafe/next dev",
-		"start:backend": "yarn workspace @chibisafe/backend start",
-		"start:frontend": "yarn workspace @chibisafe/next start",
-		"update": "yarn upgrade-interactive"
-	},
-	"author": {
-		"name": "Pitu",
-		"email": "heyitspitu@gmail.com",
-		"url": "https://github.com/Pitu"
-	},
+	"type": "module",
 	"license": "MIT",
 	"engines": {
-		"node": ">=18.9.0"
+		"node": ">=20"
 	},
-	"packageManager": "yarn@4.1.1",
-	"workspaces": [
-		"packages/backend",
-		"packages/next"
-	],
+	"main": "dist/main.js",
+	"scripts": {
+		"build": "rimraf dist && tsc",
+		"start": "node dist/main.js",
+		"dev": "tsx watch src/main.ts",
+		"typecheck": "tsc --noEmit",
+		"lint": "eslint src tests --ext .ts",
+		"lint:fix": "eslint src tests --ext .ts --fix",
+		"test": "node --import tsx --test tests/*.test.ts"
+	},
+	"dependencies": {
+		"@fastify/cookie": "^9.4.0",
+		"@fastify/formbody": "^7.4.0",
+		"@fastify/helmet": "^11.1.1",
+		"@fastify/multipart": "^8.3.0",
+		"@fastify/rate-limit": "^9.1.0",
+		"@fastify/static": "^7.0.4",
+		"@node-rs/argon2": "^2.0.2",
+		"better-sqlite3": "^11.10.0",
+		"dotenv": "^16.4.5",
+		"fastify": "^4.28.1",
+		"pino": "^9.5.0",
+		"pino-pretty": "^11.3.0"
+	},
 	"devDependencies": {
-		"husky": "^9.0.11",
-		"is-ci": "^3.0.1",
-		"turbo": "1.10.13",
-		"typescript": "^5.4.4"
+		"@types/better-sqlite3": "^7.6.11",
+		"@types/node": "^22.9.0",
+		"@typescript-eslint/eslint-plugin": "^8.13.0",
+		"@typescript-eslint/parser": "^8.13.0",
+		"eslint": "^8.57.1",
+		"rimraf": "^6.0.1",
+		"tsx": "^4.19.2",
+		"typescript": "^5.6.3"
 	}
 }

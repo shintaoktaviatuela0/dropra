@@ -1,79 +1,237 @@
+<h1 align="center">Dropra</h1>
+
+<p align="center"><strong>Drop. Share. Done.</strong><br/>Simple file sharing without the complexity.</p>
+
 <p align="center">
-  <img width="234" height="376" src="https://lolisafe.moe/xjoghu.png">
+  <img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="MIT License" />
+  <img src="https://img.shields.io/badge/deploy-Railway-success.svg?style=flat-square" alt="Railway" />
+  <img src="https://img.shields.io/badge/node-%3E%3D20-informational.svg?style=flat-square" alt="Node >= 20" />
 </p>
-
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://raw.githubusercontent.com/chibisafe/chibisafe/master/LICENSE)
-[![Chat / Support](https://img.shields.io/badge/Chat%20%2F%20Support-discord-7289DA.svg?style=flat-square)](https://discord.gg/5g6vgwn)
-[![Support me](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fshieldsio-patreon.vercel.app%2Fapi%3Fusername%3Dpitu%26type%3Dpledges&style=flat-square)](https://www.patreon.com/pitu)
-[![Support me](https://img.shields.io/badge/Support-Buy%20me%20a%20coffee-yellow.svg?style=flat-square)](https://www.buymeacoffee.com/kana)
-
-## What is Chibisafe?
-Chibisafe is a file uploader service written in typescript that just works. It's easy to use, easy to deploy, free and open source. It accepts files, photos, documents, anything you imagine and gives you back a shareable link for you to send to others.
-
-You can run it in public mode, user accounts mode or invite-only mode. Big files are automatically chunked to minimize network failure and users can create an API key to use the service programatically and hook it to other things.
-
-The service also comes with a dashboard where you can edit almost every configuration of the instance directly from the UI without having to touch environment or configuration files manually. Control the name, the rate limit, max file size, accepted extensions, meta descriptions, etc directly from our intuitive panel.
-
-_If you fork/deploy your own instance it would mean a lot if you were to keep either the GitHub logo to our repo or a link to it 💖_
 
 ---
-<p align="center">
-	<img src="https://repobeats.axiom.co/api/embed/ef349e2a33281ebd0e289a666892597deb08ee1a.svg">
-</p>
 
-### Features of v6 aka Holo
-- 📄 [Beautiful docs](https://chibisafe.app/docs)
-- 🗄️ [S3 Storage Support](https://github.com/chibisafe/chibisafe/blob/master/docs/s3.md)
-- 📷 Beautiful masonry to browse media files
-- ✨ Chunked uploads for big files
-- 🔗 Share direct links to uploaded files
-- 📂 Albums/Folders with direct links to share
-- 📝 Snippets/Gists creation with direct links to share
-- 🗃️ File management and file tagging
-- 🙋 User management and quotas
-- ✉️ Public or Private mode (with invite support)
-- ⬆️ ShareX support out-of-the-box to upload screenshots/screenrecordings from your desktop
-- 📱 iOS shortcut to upload files through the share menu
-- 🌐 Browser extension to upload content from websites easily
-- 🧩 Easily extensible
-- 📖 Open source
-- 🚫 No ads and no tracking (except for IP logging of requests)
+## What is Dropra?
 
+Dropra is a modern, lightweight, self-hosted file host — a privacy-friendly alternative to services
+like GoFile, MediaFire and classic Zippyshare-style hosts. Drop a file, get a short link, share it.
+No account required.
 
-## Installing and running chibisafe
-Whichever method you choose to install chibisafe keep in mind that the installation process creates an account named `admin` with the same password. Once you log in the first time make sure to change it! Also we ***highly*** recommend using docker for chibisafe.
+It is built to be **extremely easy to deploy**: a single Node.js container, an SQLite database, and
+local file storage on one persistent volume. There is **no** separate frontend, no reverse proxy, no
+PostgreSQL, no Redis and no S3 to configure.
 
-- [Running chibisafe with Docker](https://chibisafe.app/guides/running-with-docker) | [Alternate link](https://github.com/chibisafe/chibisafe/blob/master/packages/next/src/app/(home)/guides/(content)/running-with-docker/page.mdx)
-- [Running chibisafe manually](https://chibisafe.app/guides/running-manually) | [Alternate link](https://github.com/chibisafe/chibisafe/blob/master/packages/next/src/app/(home)/guides/(content)/running-manually/page.mdx)
+> Dropra is a derivative work based on the MIT-licensed [Chibisafe](https://github.com/chibisafe/chibisafe)
+> project. See [Credits](#credits).
 
-For more guides and how to set up different aspects of the service [please refer to the guides](https://chibisafe.app/guides)
+## Screenshots
 
-## Migrate from older versions
+> _Screenshots go here._
+>
+> - Homepage upload area
+> - Public file page with preview
+> - Admin dashboard
 
-<details>
-  <summary>Migrating from v5.x to v6.x</summary>
+## Features
 
-This should be straightforward, as no migration is necessary. If you want to set up a new instance jjust to try, the only things you need to take care of are to copy both the `uploads/` and `database/` folders into your new instance. Once chibisafe starts it will apply the necessary migrations automatically.
-</details>
+- ⬆️ Drag & drop, file picker, clipboard paste and mobile uploads
+- 🔗 Short, readable file URLs (`/A7x92K`) — never long UUIDs
+- 📥 Streaming downloads with HTTP Range, HEAD and conditional requests (great for video)
+- 🧩 Chunked uploads for large files
+- 🔒 Optional per-file password protection (hashed, never stored in plaintext)
+- ⏳ Optional expiration (1h → 30d, or never) with an automatic cleanup job
+- 🔢 Optional per-file download limits
+- 👤 Anonymous uploads with a private deletion token
+- 🖼️ Inline previews for images, video, audio, PDF and text
+- 🛠️ Full admin dashboard: files, storage, settings, security, reports, system
+- 🚩 Public file reporting with moderation tools
+- 🌗 Polished light / dark / system themes
+- 🩺 `/health` endpoint for Railway healthchecks
+- 🗄️ SQLite (WAL) + local storage — one service, one volume
+- 🚫 No ads, no third-party tracking
 
-> [!CAUTION]
-> Migrating from an older version than v5 to v6 is not possible, so we recommend setting up a new instance instead.
+## Quick deploy on Railway
 
-### Screenshots
-<p align="center">
-	
-![msedge_AjPLFovUHQ](https://github.com/chibisafe/chibisafe/assets/7425261/84a8f980-ae11-4f7d-b26c-e8b4e8d8d9f8)
-![msedge_UH0h77QQoc](https://github.com/chibisafe/chibisafe/assets/7425261/199c9f1a-d1ab-4bcf-9842-40bcc12a4a19)
-![msedge_BlsPiNf53x](https://github.com/chibisafe/chibisafe/assets/7425261/5076aa11-268a-4a64-ba6a-b6af721aaead)
-![msedge_iIXnaUohh6](https://github.com/chibisafe/chibisafe/assets/7425261/09f38a44-f615-4698-9006-2e41759c411d)
+> **Goal:** GitHub repository → Deploy on Railway → attach one Volume → set admin credentials → working file host.
 
-</p>
+1. **Deploy the repository** — On [Railway](https://railway.com), create a new project from this GitHub
+   repository. Railway auto-detects the `Dockerfile`.
+2. **Attach a Volume** — Add a Volume to the service and set its **mount path** to `/data`.
+3. **Configure variables** (Service → Variables):
 
-## Author
+   | Variable         | Value                                  |
+   | ---------------- | -------------------------------------- |
+   | `ADMIN_USERNAME` | your admin username                    |
+   | `ADMIN_PASSWORD` | a strong password (used once, then hashed) |
+   | `SESSION_SECRET` | a long random string (or leave unset — one is generated & persisted) |
+   | `PUBLIC_URL`     | your public URL, e.g. `https://file.example.com` |
 
-**Chibisafe** © [Pitu](https://github.com/Pitu), Released under the [MIT](https://github.com/WeebDev/chibisafe/blob/master/LICENSE) License.<br>
-Authored and maintained by Pitu.
+   `DATA_DIR` defaults to `/data` and `PORT` is provided by Railway automatically — you do not need to set them.
+4. **Generate a domain** — Under Settings → Networking, generate a public domain.
+5. **Open Dropra** — Visit your domain. The homepage upload area is live; the admin panel is at `/admin`.
 
-<a href="https://github.com/chibisafe/chibisafe/graphs/contributors">
-	<img src="https://contrib.rocks/image?repo=chibisafe/chibisafe" />
-</a>
+On first boot Dropra creates the `/data` structure, initializes SQLite, runs migrations and creates the
+admin account from `ADMIN_USERNAME` / `ADMIN_PASSWORD`. Redeploys **never** reset your database, files,
+settings or admin password.
+
+## Docker deployment
+
+```bash
+docker build -t dropra .
+
+docker run -d --name dropra \
+  -p 3000:3000 \
+  -v dropra_data:/data \
+  -e ADMIN_USERNAME="admin" \
+  -e ADMIN_PASSWORD="change-me" \
+  -e PUBLIC_URL="https://file.example.com" \
+  dropra
+```
+
+Then open <http://localhost:3000>.
+
+## Other platforms
+
+Dropra is a single container that listens on `$PORT` and stores everything in `DATA_DIR`, so it runs
+anywhere you can attach persistent storage:
+
+| Platform            | What to do                                                                       |
+| ------------------- | -------------------------------------------------------------------------------- |
+| **Render**          | Docker environment + a Disk mounted at `/data`. Health check path `/health`.      |
+| **Fly.io**          | `fly launch` (uses the Dockerfile) + a Volume mounted at `/data`.                 |
+| **Heroku**          | Container Registry deploy. Heroku dynos have ephemeral disks — attach durable storage or prefer a VPS. |
+| **VPS (Docker)**    | The `docker run` command above, with nginx/Caddy/Traefik in front for TLS.        |
+| **VPS (bare Node)** | `npm ci && npm run build && npm start` behind a process manager (systemd, pm2).   |
+
+Whatever you choose, only two things matter: persistent storage mounted at `DATA_DIR`, and letting the
+platform provide `PORT`. Reverse proxies are handled automatically — see
+[Public URLs & reverse proxies](#public-urls--reverse-proxies).
+
+## Local development
+
+```bash
+cp .env.example .env      # edit ADMIN_USERNAME / ADMIN_PASSWORD
+npm install
+npm run dev               # http://localhost:3000
+```
+
+Useful scripts:
+
+| Script              | Description                          |
+| ------------------- | ------------------------------------ |
+| `npm run dev`       | Start with hot reload                |
+| `npm run build`     | Compile TypeScript to `dist/`        |
+| `npm start`         | Run the compiled server              |
+| `npm test`          | Run unit + integration tests         |
+| `npm run typecheck` | Type-check without emitting          |
+| `npm run lint`      | Lint the source                      |
+
+## Environment variables
+
+| Variable          | Required | Default        | Description                                                        |
+| ----------------- | -------- | -------------- | ------------------------------------------------------------------ |
+| `NODE_ENV`        | no       | `development`  | `production` on Railway.                                           |
+| `PORT`            | no       | `3000`         | Listen port. Railway injects this automatically.                  |
+| `DATA_DIR`        | no       | `/data` (prod) | Root directory for all persistent data.                           |
+| `PUBLIC_URL`      | no       | auto-detected  | Public base URL used to build shareable links.                    |
+| `ADMIN_USERNAME`  | yes\*    | `admin`        | Administrator username (used on first boot).                      |
+| `ADMIN_PASSWORD`  | yes\*    | —              | Administrator password. Hashed with Argon2id; never stored plain. |
+| `SESSION_SECRET`  | no       | generated      | Cookie-signing secret. Auto-generated & persisted if unset.       |
+| `TRUST_PROXY`     | no       | `true`         | Honour `X-Forwarded-*` headers from a reverse proxy.               |
+| `MAX_UPLOAD_SIZE` | no       | `2147483648`   | Hard upload cap in bytes (2 GB).                                   |
+
+\* Required to create the admin account on first boot. After the account exists they are only used if it is missing.
+
+The server always binds to `0.0.0.0` and honours `PORT`. It never hardcodes a production port.
+
+## Public URLs & reverse proxies
+
+Dropra figures out its own public address, so short links are correct out of the box on Railway,
+Render, Heroku, Fly, Docker, a VPS behind nginx/Caddy/Traefik, or GitHub Codespaces — **no
+configuration required**.
+
+Resolution order:
+
+1. `PUBLIC_URL` env var, or **Admin → Settings → General → Public Base URL** (explicit override)
+2. `X-Forwarded-Host` / `X-Forwarded-Proto` sent by the reverse proxy
+3. The request's own `Host` header
+
+This matters because most platforms rewrite `Host` to `localhost:PORT` and send the real domain in
+`X-Forwarded-Host`. Forwarded host values are validated (`host[:port]` only), so a spoofed header
+cannot inject content into generated links. In the browser, copy/share buttons are built from the
+page's own origin, so they always match the domain you are actually visiting.
+
+Set `PUBLIC_URL` explicitly when you want links pinned to one canonical domain (e.g. behind a CDN or
+when serving several hostnames). If your proxy does **not** send `X-Forwarded-*` headers, set
+`TRUST_PROXY=false`.
+
+## Persistent storage
+
+All state lives under `DATA_DIR` (mount your Railway Volume here):
+
+```
+/data
+├── uploads/      # stored files (sharded, generated names)
+├── database/     # dropra.sqlite (+ WAL)
+├── thumbnails/   # cached previews
+├── temp/         # in-progress chunk uploads
+├── avatars/
+└── system/       # generated secrets (e.g. session secret)
+```
+
+Directories are created automatically at **runtime** (never during the Docker build), so the Railway
+Volume is respected.
+
+## Updating
+
+Push to your repository (or pull a new image) and redeploy. Migrations run automatically on startup and
+are idempotent — your data is preserved.
+
+## Backup & restore
+
+Dropra keeps everything under `DATA_DIR`, so a backup is just a copy of that directory:
+
+```bash
+# Backup (stop the service or snapshot the volume for consistency)
+tar czf dropra-backup.tar.gz -C /data .
+
+# Restore into a fresh volume mounted at /data
+tar xzf dropra-backup.tar.gz -C /data
+```
+
+On Railway, use Volume backups/snapshots.
+
+## Security
+
+- Passwords (admin and per-file) are hashed with **Argon2id**; plaintext is never stored or logged.
+- Sessions use signed, `HttpOnly`, `SameSite=Lax` cookies (Secure in production). No tokens in `localStorage`.
+- Login, upload, download and report endpoints are rate-limited; abusive IPs can be blocked.
+- Uploads are stored under generated names — original filenames are metadata only, preventing path traversal.
+- Active content (HTML/SVG/JS) is always served as an attachment with `Content-Security-Policy: sandbox`
+  and `X-Content-Type-Options: nosniff`, and is never rendered inline in Dropra's origin.
+- Security headers are applied via Helmet; short codes are cryptographically random with reserved-route protection.
+
+## Architecture
+
+```
+Browser
+   ↓
+Single Dropra Node.js service  (Fastify + server-rendered HTML)
+   ↓
+SQLite (WAL)  +  Local storage
+   ↓
+Railway Volume mounted at /data
+```
+
+One container serves the frontend, REST API, uploads, streaming downloads, previews, short links, the
+admin dashboard and background maintenance.
+
+## License
+
+Dropra is released under the [MIT License](LICENSE).
+
+## Credits
+
+Dropra is a derivative work based on **Chibisafe** (© 2023 chibisafe, MIT License). It reuses concepts and
+portions of logic — chunked uploads, file handling patterns, short-link identifiers and database modelling —
+adapted to Dropra's single-container architecture. See the [NOTICE](NOTICE) file. Dropra is an independent
+project and is not affiliated with or endorsed by Chibisafe.
