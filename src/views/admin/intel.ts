@@ -2,72 +2,57 @@ import type { IntelSnapshot } from '../../services/intel.js';
 import { escapeHtml, formatBytes } from '../../utils/format.js';
 import { adminShell } from './shell.js';
 
+// Plate carrée projection matching the generated /assets/js/world.js geometry.
 const MAP_WIDTH = 1000;
-const MAP_HEIGHT = 500;
+const LAT_TOP = 84;
+const LAT_BOTTOM = -58;
+const SCALE = MAP_WIDTH / 360;
+const MAP_HEIGHT = Math.round((LAT_TOP - LAT_BOTTOM) * SCALE);
 
-/**
- * Coarse 10° land mask, one row per latitude band from 80°N down to −60°N.
- * '#' marks a cell that contains land; it is rendered as a dot cluster to give
- * the map a recognisable silhouette without shipping vector map data.
- */
-const LAND_MASK = [
-	'..##############...##..#############',
-	'.################.##################',
-	'.############....###################',
-	'.....#######.....################...',
-	'.....######......################...',
-	'..#...####......###############.....',
-	'.......######...#######..######.....',
-	'.........#####...######..#######....',
-	'..........#####...#####....######...',
-	'..........#####....####......#####..',
-	'...........####....####......#####..',
-	'..........####.....###.......#####.#',
-	'..........##......................##',
-	'..........#.........................'
-];
-
-const projectX = (lon: number): number => ((lon + 180) / 360) * MAP_WIDTH;
-const projectY = (lat: number): number => ((90 - lat) / 180) * MAP_HEIGHT;
-
-const SUBCELL_OFFSETS: [number, number][] = [
-	[2.5, 2.5],
-	[7.5, 2.5],
-	[2.5, 7.5],
-	[7.5, 7.5]
-];
-
-const landDots = (): string => {
-	const dots: string[] = [];
-	LAND_MASK.forEach((line, row) => {
-		for (let col = 0; col < line.length; col++) {
-			if (line[col] !== '#') continue;
-			// Each 10° cell becomes a 2×2 cluster, doubling the apparent resolution.
-			for (const [dx, dy] of SUBCELL_OFFSETS) {
-				const lon = -180 + col * 10 + dx;
-				const lat = 80 - row * 10 - dy;
-				dots.push(`<circle cx="${projectX(lon).toFixed(1)}" cy="${projectY(lat).toFixed(1)}" r="2.1" />`);
-			}
-		}
-	});
-
-	return `<g class="map-land">${dots.join('')}</g>`;
-};
+const projectX = (lon: number): number => (lon + 180) * SCALE;
+const projectY = (lat: number): number => (LAT_TOP - lat) * SCALE;
 
 const graticule = (): string => {
 	const lines: string[] = [];
-	for (let lon = -180; lon <= 180; lon += 30) {
+	for (let lon = -180; lon <= 180; lon += 20) {
 		const x = projectX(lon).toFixed(1);
 		lines.push(`<line x1="${x}" y1="0" x2="${x}" y2="${MAP_HEIGHT}" />`);
 	}
 
-	for (let lat = -60; lat <= 80; lat += 20) {
+	for (let lat = 80; lat >= LAT_BOTTOM; lat -= 20) {
 		const y = projectY(lat).toFixed(1);
 		lines.push(`<line x1="0" y1="${y}" x2="${MAP_WIDTH}" y2="${y}" />`);
 	}
 
 	return `<g class="map-grid">${lines.join('')}</g>`;
 };
+
+const defs = (): string => `<defs>
+		<radialGradient id="holo-ocean" cx="50%" cy="46%" r="72%">
+			<stop offset="0%" stop-color="#38bdf8" stop-opacity="0.18" />
+			<stop offset="60%" stop-color="#1d4ed8" stop-opacity="0.07" />
+			<stop offset="100%" stop-color="#020617" stop-opacity="0" />
+		</radialGradient>
+		<linearGradient id="holo-land" x1="0" y1="0" x2="0" y2="1">
+			<stop offset="0%" stop-color="#7dd3fc" stop-opacity="0.34" />
+			<stop offset="100%" stop-color="#6366f1" stop-opacity="0.16" />
+		</linearGradient>
+		<linearGradient id="holo-sweep" x1="0" y1="0" x2="1" y2="0">
+			<stop offset="0%" stop-color="#38bdf8" stop-opacity="0" />
+			<stop offset="70%" stop-color="#38bdf8" stop-opacity="0.06" />
+			<stop offset="100%" stop-color="#7dd3fc" stop-opacity="0.3" />
+		</linearGradient>
+		<filter id="holo-glow" x="-40%" y="-40%" width="180%" height="180%">
+			<feGaussianBlur stdDeviation="1.6" result="blur" />
+			<feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+		</filter>
+		<filter id="holo-glow-soft" x="-60%" y="-60%" width="220%" height="220%">
+			<feGaussianBlur stdDeviation="5" />
+		</filter>
+		<pattern id="holo-scan" width="6" height="3" patternUnits="userSpaceOnUse">
+			<rect x="0" y="0" width="6" height="1" fill="#bae6fd" fill-opacity="0.05" />
+		</pattern>
+	</defs>`;
 
 export const renderAdminIntel = (params: {
 	snapshot: IntelSnapshot;
@@ -83,13 +68,14 @@ export const renderAdminIntel = (params: {
 		.map((entry, index) => {
 			const x = projectX(entry.lon!).toFixed(1);
 			const y = projectY(entry.lat!).toFixed(1);
-			const radius = (5 + (entry.uploads / peak) * 13).toFixed(1);
+			const ring = (7 + (entry.uploads / peak) * 15).toFixed(1);
 			const share = ((entry.uploads / Math.max(1, snapshot.totalUploads)) * 100).toFixed(1);
-			return `<g class="map-marker" data-code="${escapeHtml(entry.code)}" style="--delay:${((index % 8) * 0.35).toFixed(2)}s">
+			return `<g class="map-marker" data-code="${escapeHtml(entry.code)}" style="--delay:${((index % 8) * 0.4).toFixed(2)}s">
 					<title>${escapeHtml(entry.name)} — ${entry.uploads} upload(s), ${share}%</title>
-					<circle class="marker-pulse" cx="${x}" cy="${y}" r="${radius}" />
-					<circle class="marker-pulse marker-pulse-2" cx="${x}" cy="${y}" r="${radius}" />
-					<circle class="marker-core" cx="${x}" cy="${y}" r="${Math.max(3, Number(radius) / 3).toFixed(1)}" />
+					<circle class="marker-halo" cx="${x}" cy="${y}" r="${ring}" />
+					<circle class="marker-ring" cx="${x}" cy="${y}" r="${ring}" />
+					<circle class="marker-ring marker-ring-2" cx="${x}" cy="${y}" r="${ring}" />
+					<circle class="marker-core" cx="${x}" cy="${y}" r="3.2" />
 				</g>`;
 		})
 		.join('');
@@ -146,12 +132,18 @@ export const renderAdminIntel = (params: {
 				<span class="muted" id="intel-status">Streaming</span>
 			</div>
 			<div class="intel-map">
-				<svg viewBox="0 0 ${MAP_WIDTH} ${MAP_HEIGHT}" role="img" aria-label="World map of upload origins" preserveAspectRatio="xMidYMid meet">
+				<svg class="holo-map" viewBox="0 0 ${MAP_WIDTH} ${MAP_HEIGHT}" role="img" aria-label="World map of upload origins" preserveAspectRatio="xMidYMid meet">
+					${defs()}
+					<rect class="map-ocean" x="0" y="0" width="${MAP_WIDTH}" height="${MAP_HEIGHT}" />
 					${graticule()}
-					${landDots()}
+					<path id="world-land" class="map-land" d="" />
+					<path id="world-borders" class="map-borders" d="" />
+					<rect class="map-scan" x="0" y="0" width="${MAP_WIDTH}" height="${MAP_HEIGHT}" />
+					<rect class="map-sweep" x="0" y="0" width="240" height="${MAP_HEIGHT}" />
 					<g id="intel-arcs" class="map-arcs"></g>
 					<g id="intel-markers">${markers}</g>
 				</svg>
+				<div class="holo-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
 			</div>
 		</section>
 
@@ -172,6 +164,6 @@ export const renderAdminIntel = (params: {
 		body,
 		username: params.username,
 		openReports: params.openReports,
-		extraScripts: `<script>window.DOPRA_INTEL = { width: ${MAP_WIDTH}, height: ${MAP_HEIGHT} };</script><script src="/assets/js/intel.js" defer></script>`
+		extraScripts: `<script>window.DOPRA_INTEL = { width: ${MAP_WIDTH}, height: ${MAP_HEIGHT}, latTop: ${LAT_TOP}, scale: ${SCALE} };</script><script src="/assets/js/world.js" defer></script><script src="/assets/js/intel.js" defer></script>`
 	});
 };

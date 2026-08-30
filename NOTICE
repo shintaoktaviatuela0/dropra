@@ -18,3 +18,9 @@ full license text.
 
 Dopra is an independent project and is not affiliated with or endorsed by the
 Chibisafe project or its authors.
+
+Natural Earth
+-------------
+public/js/world.js contains vector geometry derived from Natural Earth
+(1:110m land and country boundaries, https://www.naturalearthdata.com),
+which is released into the public domain.

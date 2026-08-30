@@ -1,5 +1,5 @@
 (function () {
-	var CONFIG = window.DOPRA_INTEL || { width: 1000, height: 500 };
+	var CONFIG = window.DOPRA_INTEL || { width: 1000, height: 394, latTop: 84, scale: 1000 / 360 };
 	var markersLayer = document.getElementById('intel-markers');
 	var arcsLayer = document.getElementById('intel-arcs');
 	var feedList = document.getElementById('intel-feed');
@@ -11,8 +11,18 @@
 	var POLL_MS = 8000;
 	var lastEventKey = null;
 
-	function projectX(lon) { return ((lon + 180) / 360) * CONFIG.width; }
-	function projectY(lat) { return ((90 - lat) / 180) * CONFIG.height; }
+	// Land and border geometry ships as a cached static asset (assets/js/world.js).
+	(function paintWorld() {
+		var world = window.DOPRA_WORLD;
+		if (!world) return;
+		var land = document.getElementById('world-land');
+		var borders = document.getElementById('world-borders');
+		if (land) land.setAttribute('d', world.land);
+		if (borders) borders.setAttribute('d', world.borders);
+	})();
+
+	function projectX(lon) { return (lon + 180) * CONFIG.scale; }
+	function projectY(lat) { return (CONFIG.latTop - lat) * CONFIG.scale; }
 
 	function relativeTime(ts) {
 		var seconds = Math.max(0, Math.round((Date.now() - ts) / 1000));
@@ -50,18 +60,19 @@
 		plotted.forEach(function (entry, index) {
 			var x = projectX(entry.lon);
 			var y = projectY(entry.lat);
-			var radius = 5 + (entry.uploads / peak) * 13;
+			var ring = 7 + (entry.uploads / peak) * 15;
 			var share = ((entry.uploads / Math.max(1, totalUploads)) * 100).toFixed(1);
 
 			var group = el('g', { class: 'map-marker', 'data-code': entry.code });
-			group.style.setProperty('--delay', ((index % 8) * 0.35).toFixed(2) + 's');
+			group.style.setProperty('--delay', ((index % 8) * 0.4).toFixed(2) + 's');
 
 			var title = document.createElementNS(SVG_NS, 'title');
 			title.textContent = entry.name + ' — ' + entry.uploads + ' upload(s), ' + share + '%';
 			group.appendChild(title);
-			group.appendChild(el('circle', { class: 'marker-pulse', cx: x, cy: y, r: radius }));
-			group.appendChild(el('circle', { class: 'marker-pulse marker-pulse-2', cx: x, cy: y, r: radius }));
-			group.appendChild(el('circle', { class: 'marker-core', cx: x, cy: y, r: Math.max(3, radius / 3) }));
+			group.appendChild(el('circle', { class: 'marker-halo', cx: x, cy: y, r: ring }));
+			group.appendChild(el('circle', { class: 'marker-ring', cx: x, cy: y, r: ring }));
+			group.appendChild(el('circle', { class: 'marker-ring marker-ring-2', cx: x, cy: y, r: ring }));
+			group.appendChild(el('circle', { class: 'marker-core', cx: x, cy: y, r: 3.2 }));
 			markersLayer.appendChild(group);
 		});
 	}
@@ -73,15 +84,15 @@
 		var y1 = projectY(event.lat);
 		var x2 = CONFIG.width / 2;
 		var y2 = CONFIG.height / 2;
-		var lift = Math.min(160, Math.hypot(x2 - x1, y2 - y1) * 0.45);
-		var path = el('path', {
-			class: 'map-arc',
-			d: 'M ' + x1 + ' ' + y1 + ' Q ' + (x1 + x2) / 2 + ' ' + ((y1 + y2) / 2 - lift) + ' ' + x2 + ' ' + y2
-		});
+		var lift = Math.min(150, Math.hypot(x2 - x1, y2 - y1) * 0.45);
+		var d = 'M ' + x1 + ' ' + y1 + ' Q ' + (x1 + x2) / 2 + ' ' + ((y1 + y2) / 2 - lift) + ' ' + x2 + ' ' + y2;
+		var glow = el('path', { class: 'map-arc map-arc-glow', d: d });
+		var path = el('path', { class: 'map-arc', d: d });
 		var ping = el('circle', { class: 'map-ping', cx: x1, cy: y1, r: 6 });
+		arcsLayer.appendChild(glow);
 		arcsLayer.appendChild(path);
 		arcsLayer.appendChild(ping);
-		setTimeout(function () { path.remove(); ping.remove(); }, 2600);
+		setTimeout(function () { glow.remove(); path.remove(); ping.remove(); }, 2600);
 	}
 
 	function renderFeed(events) {
