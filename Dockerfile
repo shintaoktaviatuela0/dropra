@@ -34,7 +34,9 @@ COPY package.json ./
 COPY public ./public
 
 # Persistent data lives on the Railway Volume mounted at /data.
-VOLUME ["/data"]
+# Railway rejects the Docker VOLUME instruction — attach the Volume in the
+# service settings instead. The app creates DATA_DIR on boot if missing.
+RUN mkdir -p /data
 
 # Railway provides PORT at runtime; this is only a local-dev default.
 EXPOSE 3000
