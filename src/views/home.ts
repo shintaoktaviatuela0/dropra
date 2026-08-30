@@ -78,7 +78,7 @@ export const renderHome = (): string => {
 				</div>
 			</li>
 		</template>
-		<script>window.DROPRA = ${JSON.stringify(clientConfig)};</script>`;
+		<script>window.DOPRA = ${JSON.stringify(clientConfig)};</script>`;
 
 	return layout({
 		body,

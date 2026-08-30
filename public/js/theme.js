@@ -1,5 +1,5 @@
 (function () {
-	var KEY = 'dropra-theme';
+	var KEY = 'dopra-theme';
 	function resolve(theme) {
 		if (theme === 'system') {
 			return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';

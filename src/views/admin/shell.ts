@@ -24,7 +24,7 @@ const NAV = [
 /** Admin dashboard chrome (sidebar + topbar). */
 export const adminShell = (options: AdminShellOptions): string => {
 	const settings = getSettings();
-	const siteName = escapeHtml(settings.siteName || 'Dropra');
+	const siteName = escapeHtml(settings.siteName || 'Dopra');
 
 	const nav = NAV.map(item => {
 		const badge =
@@ -42,10 +42,10 @@ export const adminShell = (options: AdminShellOptions): string => {
 	<meta name="robots" content="noindex" />
 	<title>${escapeHtml(options.title)} · ${siteName} Admin</title>
 	<link rel="icon" href="${settings.faviconUrl ? escapeHtml(settings.faviconUrl) : '/assets/favicon.svg'}" type="image/svg+xml" />
-	<link rel="stylesheet" href="/assets/css/dropra.css" />
+	<link rel="stylesheet" href="/assets/css/dopra.css" />
 	<style>:root{--accent:${escapeHtml(settings.accentColor || '#4f46e5')};}</style>
 	<script>
-		(function(){try{var s=localStorage.getItem('dropra-theme')||'system';var r=s==='system'?(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):s;document.documentElement.setAttribute('data-theme',r);}catch(e){}})();
+		(function(){try{var s=localStorage.getItem('dopra-theme')||'system';var r=s==='system'?(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):s;document.documentElement.setAttribute('data-theme',r);}catch(e){}})();
 	</script>
 </head>
 <body class="admin">

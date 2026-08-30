@@ -1,7 +1,7 @@
-Dropra
+Dopra
 ======
 
-Copyright (c) 2023-present The Dropra contributors.
+Copyright (c) 2023-present The Dopra contributors.
 
 This product is a derivative work based on Chibisafe.
 
@@ -11,10 +11,10 @@ Copyright (c) 2023 chibisafe
 Licensed under the MIT License.
 Original project: https://github.com/chibisafe/chibisafe
 
-Dropra reuses concepts and portions of logic from Chibisafe (chunked upload
+Dopra reuses concepts and portions of logic from Chibisafe (chunked upload
 handling, file storage patterns, short-link identifiers and database modelling)
 and is redistributed under the same MIT License. See the LICENSE file for the
 full license text.
 
-Dropra is an independent project and is not affiliated with or endorsed by the
+Dopra is an independent project and is not affiliated with or endorsed by the
 Chibisafe project or its authors.

@@ -1,4 +1,4 @@
-<h1 align="center">Dropra</h1>
+<h1 align="center">Dopra</h1>
 
 <p align="center"><strong>Drop. Share. Done.</strong><br/>Simple file sharing without the complexity.</p>
 
@@ -10,9 +10,9 @@
 
 ---
 
-## What is Dropra?
+## What is Dopra?
 
-Dropra is a modern, lightweight, self-hosted file host — a privacy-friendly alternative to services
+Dopra is a modern, lightweight, self-hosted file host — a privacy-friendly alternative to services
 like GoFile, MediaFire and classic Zippyshare-style hosts. Drop a file, get a short link, share it.
 No account required.
 
@@ -20,7 +20,7 @@ It is built to be **extremely easy to deploy**: a single Node.js container, an S
 local file storage on one persistent volume. There is **no** separate frontend, no reverse proxy, no
 PostgreSQL, no Redis and no S3 to configure.
 
-> Dropra is a derivative work based on the MIT-licensed [Chibisafe](https://github.com/chibisafe/chibisafe)
+> Dopra is a derivative work based on the MIT-licensed [Chibisafe](https://github.com/chibisafe/chibisafe)
 > project. See [Credits](#credits).
 
 ## Screenshots
@@ -67,31 +67,31 @@ PostgreSQL, no Redis and no S3 to configure.
 
    `DATA_DIR` defaults to `/data` and `PORT` is provided by Railway automatically — you do not need to set them.
 4. **Generate a domain** — Under Settings → Networking, generate a public domain.
-5. **Open Dropra** — Visit your domain. The homepage upload area is live; the admin panel is at `/admin`.
+5. **Open Dopra** — Visit your domain. The homepage upload area is live; the admin panel is at `/admin`.
 
-On first boot Dropra creates the `/data` structure, initializes SQLite, runs migrations and creates the
+On first boot Dopra creates the `/data` structure, initializes SQLite, runs migrations and creates the
 admin account from `ADMIN_USERNAME` / `ADMIN_PASSWORD`. Redeploys **never** reset your database, files,
 settings or admin password.
 
 ## Docker deployment
 
 ```bash
-docker build -t dropra .
+docker build -t dopra .
 
-docker run -d --name dropra \
+docker run -d --name dopra \
   -p 3000:3000 \
-  -v dropra_data:/data \
+  -v dopra_data:/data \
   -e ADMIN_USERNAME="admin" \
   -e ADMIN_PASSWORD="change-me" \
   -e PUBLIC_URL="https://file.example.com" \
-  dropra
+  dopra
 ```
 
 Then open <http://localhost:3000>.
 
 ## Other platforms
 
-Dropra is a single container that listens on `$PORT` and stores everything in `DATA_DIR`, so it runs
+Dopra is a single container that listens on `$PORT` and stores everything in `DATA_DIR`, so it runs
 anywhere you can attach persistent storage:
 
 | Platform            | What to do                                                                       |
@@ -145,7 +145,7 @@ The server always binds to `0.0.0.0` and honours `PORT`. It never hardcodes a pr
 
 ## Public URLs & reverse proxies
 
-Dropra figures out its own public address, so short links are correct out of the box on Railway,
+Dopra figures out its own public address, so short links are correct out of the box on Railway,
 Render, Heroku, Fly, Docker, a VPS behind nginx/Caddy/Traefik, or GitHub Codespaces — **no
 configuration required**.
 
@@ -171,7 +171,7 @@ All state lives under `DATA_DIR` (mount your Railway Volume here):
 ```
 /data
 ├── uploads/      # stored files (sharded, generated names)
-├── database/     # dropra.sqlite (+ WAL)
+├── database/     # dopra.sqlite (+ WAL)
 ├── thumbnails/   # cached previews
 ├── temp/         # in-progress chunk uploads
 ├── avatars/
@@ -188,14 +188,14 @@ are idempotent — your data is preserved.
 
 ## Backup & restore
 
-Dropra keeps everything under `DATA_DIR`, so a backup is just a copy of that directory:
+Dopra keeps everything under `DATA_DIR`, so a backup is just a copy of that directory:
 
 ```bash
 # Backup (stop the service or snapshot the volume for consistency)
-tar czf dropra-backup.tar.gz -C /data .
+tar czf dopra-backup.tar.gz -C /data .
 
 # Restore into a fresh volume mounted at /data
-tar xzf dropra-backup.tar.gz -C /data
+tar xzf dopra-backup.tar.gz -C /data
 ```
 
 On Railway, use Volume backups/snapshots.
@@ -207,7 +207,7 @@ On Railway, use Volume backups/snapshots.
 - Login, upload, download and report endpoints are rate-limited; abusive IPs can be blocked.
 - Uploads are stored under generated names — original filenames are metadata only, preventing path traversal.
 - Active content (HTML/SVG/JS) is always served as an attachment with `Content-Security-Policy: sandbox`
-  and `X-Content-Type-Options: nosniff`, and is never rendered inline in Dropra's origin.
+  and `X-Content-Type-Options: nosniff`, and is never rendered inline in Dopra's origin.
 - Security headers are applied via Helmet; short codes are cryptographically random with reserved-route protection.
 
 ## Architecture
@@ -215,7 +215,7 @@ On Railway, use Volume backups/snapshots.
 ```
 Browser
    ↓
-Single Dropra Node.js service  (Fastify + server-rendered HTML)
+Single Dopra Node.js service  (Fastify + server-rendered HTML)
    ↓
 SQLite (WAL)  +  Local storage
    ↓
@@ -227,11 +227,11 @@ admin dashboard and background maintenance.
 
 ## License
 
-Dropra is released under the [MIT License](LICENSE).
+Dopra is released under the [MIT License](LICENSE).
 
 ## Credits
 
-Dropra is a derivative work based on **Chibisafe** (© 2023 chibisafe, MIT License). It reuses concepts and
+Dopra is a derivative work based on **Chibisafe** (© 2023 chibisafe, MIT License). It reuses concepts and
 portions of logic — chunked uploads, file handling patterns, short-link identifiers and database modelling —
-adapted to Dropra's single-container architecture. See the [NOTICE](NOTICE) file. Dropra is an independent
+adapted to Dopra's single-container architecture. See the [NOTICE](NOTICE) file. Dopra is an independent
 project and is not affiliated with or endorsed by Chibisafe.

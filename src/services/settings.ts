@@ -1,7 +1,7 @@
 import { config } from '../config.js';
 import { getDb } from '../db/index.js';
 
-export interface DropraSettings {
+export interface DopraSettings {
 	// General
 	siteName: string;
 	siteDescription: string;
@@ -40,8 +40,8 @@ export interface DropraSettings {
 	reportRateMax: number;
 }
 
-export const DEFAULTS: DropraSettings = {
-	siteName: 'Dropra',
+export const DEFAULTS: DopraSettings = {
+	siteName: 'Dopra',
 	siteDescription: 'Drop. Share. Done. Simple file sharing without the complexity.',
 	publicBaseUrl: config.publicUrl,
 	contactUrl: '',
@@ -74,10 +74,10 @@ export const DEFAULTS: DropraSettings = {
 	reportRateMax: 5
 };
 
-let cache: DropraSettings | null = null;
+let cache: DopraSettings | null = null;
 
 /** Load settings from the database, layering overrides on top of defaults. */
-export const loadSettings = (): DropraSettings => {
+export const loadSettings = (): DopraSettings => {
 	const db = getDb();
 	const rows = db.prepare('SELECT key, value FROM settings').all() as { key: string; value: string }[];
 	const overrides: Record<string, unknown> = {};
@@ -89,16 +89,16 @@ export const loadSettings = (): DropraSettings => {
 		}
 	}
 
-	cache = { ...DEFAULTS, ...(overrides as Partial<DropraSettings>) };
+	cache = { ...DEFAULTS, ...(overrides as Partial<DopraSettings>) };
 	return cache;
 };
 
-export const getSettings = (): DropraSettings => cache ?? loadSettings();
+export const getSettings = (): DopraSettings => cache ?? loadSettings();
 
-export const getSetting = <K extends keyof DropraSettings>(key: K): DropraSettings[K] => getSettings()[key];
+export const getSetting = <K extends keyof DopraSettings>(key: K): DopraSettings[K] => getSettings()[key];
 
 /** Persist and hot-update a single setting (no restart needed). */
-export const setSetting = <K extends keyof DropraSettings>(key: K, value: DropraSettings[K]): void => {
+export const setSetting = <K extends keyof DopraSettings>(key: K, value: DopraSettings[K]): void => {
 	const db = getDb();
 	db.prepare('INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value').run(
 		key,
@@ -108,8 +108,8 @@ export const setSetting = <K extends keyof DropraSettings>(key: K, value: Dropra
 	cache![key] = value;
 };
 
-export const setSettings = (values: Partial<DropraSettings>): void => {
+export const setSettings = (values: Partial<DopraSettings>): void => {
 	for (const [key, value] of Object.entries(values)) {
-		setSetting(key as keyof DropraSettings, value as never);
+		setSetting(key as keyof DopraSettings, value as never);
 	}
 };

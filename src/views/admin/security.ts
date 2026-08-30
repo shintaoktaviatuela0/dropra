@@ -1,4 +1,4 @@
-import type { DropraSettings } from '../../services/settings.js';
+import type { DopraSettings } from '../../services/settings.js';
 import { escapeHtml, formatDate } from '../../utils/format.js';
 import { adminShell } from './shell.js';
 
@@ -6,7 +6,7 @@ const number = (name: string, label: string, value: number): string =>
 	`<label>${escapeHtml(label)}<input type="number" name="${name}" value="${value}" min="0" /></label>`;
 
 export const renderAdminSecurity = (params: {
-	settings: DropraSettings;
+	settings: DopraSettings;
 	bannedIps: { ip: string; reason: string | null; createdAt: number }[];
 	username: string;
 	openReports: number;

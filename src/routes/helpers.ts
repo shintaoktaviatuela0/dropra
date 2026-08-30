@@ -5,7 +5,7 @@ import { getSessionUser } from '../services/sessions.js';
 import type { User } from '../services/users.js';
 import type { FileRecord } from '../services/files.js';
 
-export const SESSION_COOKIE = 'dropra_session';
+export const SESSION_COOKIE = 'dopra_session';
 
 const baseCookieOptions = {
 	httpOnly: true,

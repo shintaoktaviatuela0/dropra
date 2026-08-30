@@ -33,7 +33,7 @@ export const config = {
 		system: path.join(dataDir, 'system')
 	},
 	get databaseFile() {
-		return path.join(this.paths.database, 'dropra.sqlite');
+		return path.join(this.paths.database, 'dopra.sqlite');
 	},
 	admin: {
 		username: process.env.ADMIN_USERNAME ?? 'admin',

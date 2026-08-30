@@ -15,7 +15,7 @@ export interface LayoutOptions {
 /** Base HTML document shared by every server-rendered page. */
 export const layout = (options: LayoutOptions): string => {
 	const settings = getSettings();
-	const siteName = escapeHtml(settings.siteName || 'Dropra');
+	const siteName = escapeHtml(settings.siteName || 'Dopra');
 	const title = options.title ? `${escapeHtml(options.title)} · ${siteName}` : siteName;
 	const description = escapeHtml(options.description || settings.siteDescription);
 	const accent = escapeHtml(settings.accentColor || '#4f46e5');
@@ -63,12 +63,12 @@ export const layout = (options: LayoutOptions): string => {
 	<meta property="og:description" content="${description}" />
 	<title>${title}</title>
 	<link rel="icon" href="${favicon}" type="image/svg+xml" />
-	<link rel="stylesheet" href="/assets/css/dropra.css" />
+	<link rel="stylesheet" href="/assets/css/dopra.css" />
 	<style>:root{--accent:${accent};}</style>
 	<script>
 		(function(){
 			try{
-				var stored = localStorage.getItem('dropra-theme');
+				var stored = localStorage.getItem('dopra-theme');
 				var theme = stored || 'system';
 				var resolved = theme === 'system'
 					? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
@@ -89,6 +89,6 @@ export const layout = (options: LayoutOptions): string => {
 </html>`;
 };
 
-/** Inline SVG brand mark for Dropra (a stylised drop). */
+/** Inline SVG brand mark for Dopra (a stylised drop). */
 export const brandMark = (): string =>
 	`<svg class="brand-mark" width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5c3.6 4.2 6.5 7.9 6.5 11.4A6.5 6.5 0 0 1 12 20.4a6.5 6.5 0 0 1-6.5-6.5C5.5 10.4 8.4 6.7 12 2.5Z" fill="var(--accent)"/></svg>`;

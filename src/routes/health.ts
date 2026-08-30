@@ -16,7 +16,7 @@ export const registerHealthRoutes = (app: FastifyInstance): void => {
 
 		return reply.code(healthy ? 200 : 503).send({
 			status: healthy ? 'ok' : 'degraded',
-			service: 'dropra',
+			service: 'dopra',
 			database,
 			storage,
 			version: config.isProduction ? undefined : '1.0.0'

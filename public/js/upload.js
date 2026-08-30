@@ -1,5 +1,5 @@
 (function () {
-	var CONFIG = window.DROPRA || {};
+	var CONFIG = window.DOPRA || {};
 	var form = document.getElementById('upload-form');
 	if (!form) return;
 
@@ -10,10 +10,10 @@
 
 	function ownerToken() {
 		try {
-			var token = localStorage.getItem('dropra-owner');
+			var token = localStorage.getItem('dopra-owner');
 			if (!token) {
 				token = randomId(16);
-				localStorage.setItem('dropra-owner', token);
+				localStorage.setItem('dopra-owner', token);
 			}
 			return token;
 		} catch (e) {

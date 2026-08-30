@@ -1,5 +1,5 @@
 # ─────────────────────────────────────────────────────────────
-# Dropra — production Dockerfile (multi-stage)
+# Dopra — production Dockerfile (multi-stage)
 # Railway auto-detects this file. One image, one process, one container.
 # ─────────────────────────────────────────────────────────────
 

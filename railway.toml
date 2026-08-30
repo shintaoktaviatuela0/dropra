@@ -1,4 +1,4 @@
-# Railway deployment configuration for Dropra.
+# Railway deployment configuration for Dopra.
 # Railway auto-detects the Dockerfile; this file wires up the healthcheck
 # and restart policy.
 

@@ -7,7 +7,7 @@ import { after, before, test } from 'node:test';
 // Environment must be configured BEFORE any application module is imported,
 // because config.ts reads process.env at load time. All app modules are
 // therefore loaded lazily via dynamic import() inside before().
-const dataDir = mkdtempSync(path.join(os.tmpdir(), 'dropra-it-'));
+const dataDir = mkdtempSync(path.join(os.tmpdir(), 'dopra-it-'));
 process.env.DATA_DIR = dataDir;
 process.env.ADMIN_USERNAME = 'tester';
 process.env.ADMIN_PASSWORD = 'super-secret-123';
@@ -30,7 +30,7 @@ const buildMultipart = (
 	fields: [string, string][],
 	file: { name: string; content: string | Buffer; contentType: string }
 ): { payload: Buffer; headers: Record<string, string> } => {
-	const boundary = `----dropra${Math.random().toString(16).slice(2)}`;
+	const boundary = `----dopra${Math.random().toString(16).slice(2)}`;
 	const chunks: Buffer[] = [];
 	for (const [name, value] of fields) {
 		chunks.push(Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="${name}"\r\n\r\n${value}\r\n`));
@@ -71,7 +71,7 @@ test('TEST 3 — /health returns 200', async () => {
 	assert.equal(res.statusCode, 200);
 	const body = res.json();
 	assert.equal(body.status, 'ok');
-	assert.equal(body.service, 'dropra');
+	assert.equal(body.service, 'dopra');
 	assert.equal(body.database, 'ok');
 	assert.equal(body.storage, 'ok');
 });
@@ -79,7 +79,7 @@ test('TEST 3 — /health returns 200', async () => {
 test('TEST 4-7 — anonymous upload returns a short URL, page and raw work', async () => {
 	const { payload, headers } = buildMultipart([['expiration', 'never']], {
 		name: 'hello.txt',
-		content: 'hello dropra world',
+		content: 'hello dopra world',
 		contentType: 'text/plain'
 	});
 	const res = await app.inject({ method: 'POST', url: '/api/upload', headers, payload });
@@ -98,7 +98,7 @@ test('TEST 4-7 — anonymous upload returns a short URL, page and raw work', asy
 	// Raw stream returns the exact bytes.
 	const raw = await app.inject({ method: 'GET', url: `/raw/${shortCode}` });
 	assert.equal(raw.statusCode, 200);
-	assert.equal(raw.body, 'hello dropra world');
+	assert.equal(raw.body, 'hello dopra world');
 });
 
 test('TEST 15 — HTTP Range requests are supported', async () => {
@@ -208,9 +208,9 @@ test('TEST 10-12 — admin login, list and delete', async () => {
 		payload: 'username=tester&password=super-secret-123'
 	});
 	assert.equal(login.statusCode, 302);
-	const session = login.cookies.find((c: any) => c.name === 'dropra_session');
+	const session = login.cookies.find((c: any) => c.name === 'dopra_session');
 	assert.ok(session);
-	const cookie = `dropra_session=${session.value}`;
+	const cookie = `dopra_session=${session.value}`;
 
 	// Dashboard is reachable.
 	const dash = await app.inject({ method: 'GET', url: '/admin', headers: { cookie } });

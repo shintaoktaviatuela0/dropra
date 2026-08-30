@@ -1,7 +1,7 @@
 {
-	"name": "dropra",
+	"name": "dopra",
 	"version": "1.0.0",
-	"description": "Dropra — Drop. Share. Done. A simple, fast, self-hosted file sharing platform.",
+	"description": "Dopra — Drop. Share. Done. A simple, fast, self-hosted file sharing platform.",
 	"private": true,
 	"type": "module",
 	"license": "MIT",

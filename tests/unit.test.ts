@@ -75,7 +75,7 @@ test('expiration: clamp respects maximum and never policy', () => {
 });
 
 test('storage: rejects path traversal, supports sharded keys', async () => {
-	const root = mkdtempSync(path.join(os.tmpdir(), 'dropra-store-'));
+	const root = mkdtempSync(path.join(os.tmpdir(), 'dopra-store-'));
 	try {
 		const provider = new LocalStorageProvider(root);
 		assert.equal(provider.keyFor('abcdef12'), path.posix.join('ab', 'cd', 'abcdef12'));

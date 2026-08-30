@@ -20,7 +20,7 @@ import {
 import { countOpenReports, getReport, listReports, setReportStatus } from '../services/reports.js';
 import { banIp, listBannedIps, unbanIp } from '../services/security.js';
 import { createSession, destroySession } from '../services/sessions.js';
-import { getSettings, setSettings, type DropraSettings } from '../services/settings.js';
+import { getSettings, setSettings, type DopraSettings } from '../services/settings.js';
 import { getDashboardStats } from '../services/stats.js';
 import { getUserByUsername, verifyPassword } from '../services/users.js';
 import { renderAdminDashboard } from '../views/admin/dashboard.js';
@@ -78,7 +78,7 @@ const normaliseExtension = (value: string): string => {
 const stripControlChars = (value: string): string =>
 	[...value].filter(char => char.charCodeAt(0) > 31).join('');
 
-const parseSettingsForm = (body: Record<string, string>, current: DropraSettings): Partial<DropraSettings> => {
+const parseSettingsForm = (body: Record<string, string>, current: DopraSettings): Partial<DopraSettings> => {
 	const list = (value: string | undefined): string[] =>
 		(value ?? '')
 			.split(',')
@@ -109,7 +109,7 @@ const parseSettingsForm = (body: Record<string, string>, current: DropraSettings
 		enablePreviews: body.enablePreviews === 'true',
 		enableDirectLinks: body.enableDirectLinks === 'true',
 		enableDownloadCounters: body.enableDownloadCounters === 'true',
-		theme: (['system', 'light', 'dark'].includes(body.theme ?? '') ? (body.theme as DropraSettings['theme']) : current.theme),
+		theme: (['system', 'light', 'dark'].includes(body.theme ?? '') ? (body.theme as DopraSettings['theme']) : current.theme),
 		accentColor: /^#[0-9a-fA-F]{6}$/.test(body.accentColor ?? '') ? (body.accentColor as string) : current.accentColor,
 		logoUrl: (body.logoUrl ?? '').trim(),
 		faviconUrl: (body.faviconUrl ?? '').trim()

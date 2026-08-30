@@ -1,4 +1,4 @@
-import type { DropraSettings } from '../../services/settings.js';
+import type { DopraSettings } from '../../services/settings.js';
 import { EXPIRATION_OPTIONS } from '../../services/expiration.js';
 import { escapeHtml } from '../../utils/format.js';
 import { adminShell } from './shell.js';
@@ -20,7 +20,7 @@ const list = (name: string, label: string, values: string[], placeholder = ''): 
 
 const expirationOptions: [string, string][] = EXPIRATION_OPTIONS.map(option => [option.key, option.label]);
 
-export const renderAdminSettings = (settings: DropraSettings, username: string, openReports: number, saved?: boolean): string => {
+export const renderAdminSettings = (settings: DopraSettings, username: string, openReports: number, saved?: boolean): string => {
 	const body = `
 		${saved ? '<div class="notice">Settings saved.</div>' : ''}
 		<form method="post" action="/admin/settings" class="settings-form">

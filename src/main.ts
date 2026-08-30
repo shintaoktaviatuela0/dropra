@@ -9,7 +9,7 @@ import { createAdminUserIfNotExists } from './services/users.js';
 import { buildServer } from './server.js';
 
 const start = async (): Promise<void> => {
-	logger.info('Dropra starting...');
+	logger.info('Dopra starting...');
 
 	// 1. Ensure the persistent directory structure exists (runtime, not build).
 	ensureDirectories();
@@ -33,7 +33,7 @@ const start = async (): Promise<void> => {
 	// 4. Build and start the HTTP server.
 	const app = await buildServer();
 	await app.listen({ port: config.port, host: config.host });
-	logger.info(`Dropra listening on http://${config.host}:${config.port}`);
+	logger.info(`Dopra listening on http://${config.host}:${config.port}`);
 
 	// 5. Start background maintenance (expired files, sessions, temp chunks).
 	startCleanupJob();
