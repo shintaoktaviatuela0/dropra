@@ -3,7 +3,9 @@ import path from 'node:path';
 import { config } from '../config.js';
 import { logger } from '../logger.js';
 import { deleteFile, findExpiredFiles } from './files.js';
+import { closeReportsForMissingFiles, purgeReportsOlderThan } from './reports.js';
 import { cleanupExpiredSessions } from './sessions.js';
+import { getSettings } from './settings.js';
 
 const TEMP_MAX_AGE_MS = 24 * 60 * 60 * 1000; // stale chunk uploads older than 24h
 
@@ -11,9 +13,10 @@ export interface CleanupResult {
 	expiredFiles: number;
 	expiredSessions: number;
 	staleTempEntries: number;
+	purgedReports: number;
 }
 
-/** Delete expired files, prune sessions and remove stale temp chunks. */
+/** Delete expired files, prune sessions, purge old reports and stale chunks. */
 export const runCleanup = async (): Promise<CleanupResult> => {
 	let expiredFiles = 0;
 	for (const file of findExpiredFiles()) {
@@ -25,14 +28,16 @@ export const runCleanup = async (): Promise<CleanupResult> => {
 		}
 	}
 
+	closeReportsForMissingFiles('File expired or was removed');
+	const purgedReports = purgeReportsOlderThan(getSettings().reportsRetentionDays);
 	const expiredSessions = cleanupExpiredSessions();
 	const staleTempEntries = await cleanupTemp();
 
-	if (expiredFiles || expiredSessions || staleTempEntries) {
-		logger.info({ expiredFiles, expiredSessions, staleTempEntries }, 'Cleanup job completed');
+	if (expiredFiles || expiredSessions || staleTempEntries || purgedReports) {
+		logger.info({ expiredFiles, expiredSessions, staleTempEntries, purgedReports }, 'Cleanup job completed');
 	}
 
-	return { expiredFiles, expiredSessions, staleTempEntries };
+	return { expiredFiles, expiredSessions, staleTempEntries, purgedReports };
 };
 
 /** Remove leftover chunk-upload artifacts that never got finalized. */

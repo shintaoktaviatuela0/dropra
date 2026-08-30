@@ -21,6 +21,7 @@ export interface FinalizeInput {
 	tempPath: string;
 	name: string;
 	ip?: string | null;
+	country?: string | null;
 	userId?: number | null;
 	ownerToken?: string | null;
 	password?: string | null;
@@ -100,6 +101,7 @@ export const finalizeUpload = async (input: FinalizeInput): Promise<FileRecord> 
 		mimeType,
 		size: info.size,
 		ip: input.ip ?? null,
+		country: input.country ?? null,
 		userId: input.userId ?? null,
 		ownerToken: input.ownerToken ?? null,
 		password: input.password ?? null,

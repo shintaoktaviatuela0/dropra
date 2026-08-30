@@ -43,7 +43,8 @@ PostgreSQL, no Redis and no S3 to configure.
 - 👤 Anonymous uploads with a private deletion token
 - 🖼️ Inline previews for images, video, audio, PDF and text
 - 🛠️ Full admin dashboard: files, storage, settings, security, reports, system
-- 🚩 Public file reporting with moderation tools
+- 🌍 Realtime origin intelligence — animated world map of upload countries, live feed and leaderboard
+- 🚩 Public file reporting with moderation, bulk actions and retention-based cleanup
 - 🌗 Polished light / dark / system themes
 - 🩺 `/health` endpoint for Railway healthchecks
 - 🗄️ SQLite (WAL) + local storage — one service, one volume

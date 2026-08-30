@@ -2,6 +2,8 @@ import { randomUUID } from 'node:crypto';
 import { getDb } from '../db/index.js';
 import { getStorage } from '../storage/index.js';
 import { randomToken } from '../utils/crypto.js';
+import { closeReportsForMissingFiles, deleteReportsForMissingFiles } from './reports.js';
+import { getSettings } from './settings.js';
 import { generateUniqueCode } from './shortcode.js';
 import { hashPassword, verifyPassword } from './users.js';
 import { recordDownload } from './stats.js';
@@ -18,6 +20,7 @@ export interface FileRecord {
 	hash: string | null;
 	userId: number | null;
 	ip: string | null;
+	country: string | null;
 	passwordHash: string | null;
 	deletionToken: string;
 	ownerToken: string | null;
@@ -40,6 +43,7 @@ export interface CreateFileInput {
 	hash?: string | null;
 	userId?: number | null;
 	ip?: string | null;
+	country?: string | null;
 	password?: string | null;
 	ownerToken?: string | null;
 	maxDownloads?: number | null;
@@ -78,9 +82,9 @@ export const createFile = async (input: CreateFileInput): Promise<FileRecord> =>
 
 	db.prepare(
 		`INSERT INTO files
-			(uuid, shortCode, name, storageName, extension, mimeType, size, hash, userId, ip,
+			(uuid, shortCode, name, storageName, extension, mimeType, size, hash, userId, ip, country,
 			 passwordHash, deletionToken, ownerToken, maxDownloads, downloadLimitAction, status, expiresAt, createdAt)
-		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?)`
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?)`
 	).run(
 		uuid,
 		shortCode,
@@ -92,6 +96,7 @@ export const createFile = async (input: CreateFileInput): Promise<FileRecord> =>
 		input.hash ?? null,
 		input.userId ?? null,
 		input.ip ?? null,
+		input.country ?? null,
 		passwordHash,
 		deletionToken,
 		input.ownerToken ?? null,
@@ -147,10 +152,17 @@ export const registerDownload = (file: FileRecord): void => {
 export const deleteFile = async (file: FileRecord): Promise<void> => {
 	await getStorage().delete(file.storageName);
 	getDb().prepare('DELETE FROM files WHERE id = ?').run(file.id);
+	// The report's target is gone, so it can never be acted on again.
+	if (getSettings().autoDeleteReportsOnFileDelete) deleteReportsForMissingFiles();
+	else closeReportsForMissingFiles();
 };
 
 export const setStatus = (id: number, status: 'active' | 'disabled' | 'quarantined' | 'expired'): void => {
 	getDb().prepare('UPDATE files SET status = ?, editedAt = ? WHERE id = ?').run(status, Date.now(), id);
+};
+
+export const setFileCountry = (id: number, country: string | null): void => {
+	getDb().prepare('UPDATE files SET country = ? WHERE id = ?').run(country, id);
 };
 
 export const renameFile = (id: number, name: string): void => {

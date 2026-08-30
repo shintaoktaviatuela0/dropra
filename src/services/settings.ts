@@ -24,6 +24,11 @@ export interface DopraSettings {
 	enablePreviews: boolean;
 	enableDirectLinks: boolean;
 	enableDownloadCounters: boolean;
+	// Reports
+	reportsRetentionDays: number;
+	autoDeleteReportsOnFileDelete: boolean;
+	// Intelligence
+	geoIpLookupEnabled: boolean;
 	// Appearance
 	theme: 'system' | 'light' | 'dark';
 	accentColor: string;
@@ -60,6 +65,9 @@ export const DEFAULTS: DopraSettings = {
 	enablePreviews: true,
 	enableDirectLinks: true,
 	enableDownloadCounters: true,
+	reportsRetentionDays: 90,
+	autoDeleteReportsOnFileDelete: false,
+	geoIpLookupEnabled: false,
 	theme: 'system',
 	accentColor: '#4f46e5',
 	logoUrl: '',

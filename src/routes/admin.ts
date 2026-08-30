@@ -17,7 +17,22 @@ import {
 	updateExpiration,
 	type ListFilesOptions
 } from '../services/files.js';
-import { countOpenReports, getReport, listReports, setReportStatus } from '../services/reports.js';
+import {
+	countOpenReports,
+	countReportsByStatus,
+	deleteAllReports,
+	deleteReport,
+	deleteReports,
+	deleteReportsByStatus,
+	deleteResolvedReports,
+	getReport,
+	isReportEditable,
+	listReports,
+	setReportStatus,
+	type ReportStatus
+} from '../services/reports.js';
+import { clearGeoCache } from '../services/geo.js';
+import { getIntelSnapshot } from '../services/intel.js';
 import { banIp, listBannedIps, unbanIp } from '../services/security.js';
 import { createSession, destroySession } from '../services/sessions.js';
 import { getSettings, setSettings, type DopraSettings } from '../services/settings.js';
@@ -25,6 +40,7 @@ import { getDashboardStats } from '../services/stats.js';
 import { getUserByUsername, verifyPassword } from '../services/users.js';
 import { renderAdminDashboard } from '../views/admin/dashboard.js';
 import { renderAdminFiles } from '../views/admin/files.js';
+import { renderAdminIntel } from '../views/admin/intel.js';
 import { renderAdminLogin } from '../views/admin/login.js';
 import { renderAdminReports } from '../views/admin/reports.js';
 import { renderAdminSecurity } from '../views/admin/security.js';
@@ -109,6 +125,9 @@ const parseSettingsForm = (body: Record<string, string>, current: DopraSettings)
 		enablePreviews: body.enablePreviews === 'true',
 		enableDirectLinks: body.enableDirectLinks === 'true',
 		enableDownloadCounters: body.enableDownloadCounters === 'true',
+		reportsRetentionDays: Math.max(0, Math.min(3650, num(body.reportsRetentionDays, current.reportsRetentionDays))),
+		autoDeleteReportsOnFileDelete: body.autoDeleteReportsOnFileDelete === 'true',
+		geoIpLookupEnabled: body.geoIpLookupEnabled === 'true',
 		theme: (['system', 'light', 'dark'].includes(body.theme ?? '') ? (body.theme as DopraSettings['theme']) : current.theme),
 		accentColor: /^#[0-9a-fA-F]{6}$/.test(body.accentColor ?? '') ? (body.accentColor as string) : current.accentColor,
 		logoUrl: (body.logoUrl ?? '').trim(),
@@ -347,7 +366,20 @@ export const registerAdminRoutes = (app: FastifyInstance): void => {
 		// ── Reports ──────────────────────────────────────────────────────────
 		secure.get('/admin/reports', async (req, reply) => {
 			const user = getAdminUser(req)!;
-			return html(reply, 200, renderAdminReports({ reports: listReports(), username: user.username, openReports: countOpenReports() }));
+			const requested = (req.query as Record<string, string>)?.status ?? '';
+			const status = ['open', 'dismissed', 'actioned', 'file_removed'].includes(requested) ? requested : '';
+			return html(
+				reply,
+				200,
+				renderAdminReports({
+					reports: listReports({ status: status || undefined }),
+					counts: countReportsByStatus(),
+					status,
+					username: user.username,
+					openReports: countOpenReports(),
+					retentionDays: getSettings().reportsRetentionDays
+				})
+			);
 		});
 
 		secure.post('/admin/reports/:id/action', async (req, reply) => {
@@ -356,19 +388,86 @@ export const registerAdminRoutes = (app: FastifyInstance): void => {
 			const report = getReport(id);
 			if (!report) return reply.redirect('/admin/reports');
 
-			if (op === 'dismiss') {
-				setReportStatus(id, 'dismissed');
-			} else if (op === 'disableFile' || op === 'deleteFile') {
-				const file = report.fileId ? getById(report.fileId) : undefined;
-				if (file) {
-					if (op === 'deleteFile') await deleteFile(file);
-					else setStatus(file.id, 'quarantined');
-				}
+			if (op === 'deleteReport') {
+				deleteReport(id);
+				logger.info({ reportId: id }, 'Report deleted by admin');
+				return reply.redirect('/admin/reports');
+			}
 
-				setReportStatus(id, 'actioned');
+			// Resolved reports, and reports whose file was deleted, are read-only.
+			if (!isReportEditable(report)) return reply.redirect('/admin/reports');
+
+			const file = report.fileId ? getById(report.fileId) : undefined;
+			if (!file) {
+				setReportStatus(id, 'file_removed', 'File no longer exists');
+				return reply.redirect('/admin/reports');
+			}
+
+			if (op === 'dismiss') {
+				setReportStatus(id, 'dismissed', 'Dismissed by admin');
+			} else if (op === 'disableFile') {
+				setStatus(file.id, 'quarantined');
+				setReportStatus(id, 'actioned', 'File quarantined');
+			} else if (op === 'deleteFile') {
+				await deleteFile(file);
+				// deleteFile flips still-open reports to file_removed; mark this one explicitly.
+				setReportStatus(id, 'actioned', 'File deleted');
+				logger.info({ shortCode: file.shortCode, reportId: id }, 'Reported file deleted by admin');
 			}
 
 			return reply.redirect('/admin/reports');
+		});
+
+		secure.post('/admin/reports/bulk', async (req, reply) => {
+			const body = (req.body ?? {}) as Record<string, unknown>;
+			const ids = asArray(body.ids).map(Number).filter(Number.isInteger);
+			const op = String(body.op);
+
+			if (op === 'delete') {
+				const removed = deleteReports(ids);
+				logger.info({ count: removed }, 'Bulk report delete');
+			} else if (op === 'dismiss') {
+				for (const id of ids) {
+					const report = getReport(id);
+					if (report && isReportEditable(report)) setReportStatus(id, 'dismissed', 'Dismissed by admin');
+				}
+			}
+
+			return reply.redirect('/admin/reports');
+		});
+
+		secure.post('/admin/reports/purge', async (req, reply) => {
+			const op = String((req.body as Record<string, string>)?.op ?? '');
+			let removed = 0;
+			if (op === 'resolved') removed = deleteResolvedReports();
+			else if (op === 'all') removed = deleteAllReports();
+			else if (['dismissed', 'actioned', 'file_removed'].includes(op)) removed = deleteReportsByStatus(op as ReportStatus);
+
+			logger.info({ op, removed }, 'Reports purged by admin');
+			return reply.redirect('/admin/reports');
+		});
+
+		// ── Intelligence ─────────────────────────────────────────────────────
+		secure.get('/admin/intel', async (req, reply) => {
+			const user = getAdminUser(req)!;
+			return html(
+				reply,
+				200,
+				renderAdminIntel({
+					snapshot: getIntelSnapshot(),
+					username: user.username,
+					openReports: countOpenReports(),
+					geoEnabled: getSettings().geoIpLookupEnabled
+				})
+			);
+		});
+
+		secure.get('/admin/intel/data', async (_req, reply) => reply.send(getIntelSnapshot()));
+
+		secure.post('/admin/intel/clear-cache', async (_req, reply) => {
+			const removed = clearGeoCache();
+			logger.info({ removed }, 'Geo cache cleared');
+			return reply.redirect('/admin/intel');
 		});
 
 		// ── System ───────────────────────────────────────────────────────────

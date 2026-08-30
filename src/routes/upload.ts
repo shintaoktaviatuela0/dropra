@@ -6,7 +6,8 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { config } from '../config.js';
 import { logger } from '../logger.js';
 import { clampExpiration } from '../services/expiration.js';
-import { deleteFile, getByShortCode, getRecentByOwnerToken } from '../services/files.js';
+import { deleteFile, getByShortCode, getRecentByOwnerToken, setFileCountry } from '../services/files.js';
+import { countryFromHeaders, resolveCountry } from '../services/geo.js';
 import { getSettings } from '../services/settings.js';
 import { finalizeUpload, UploadError } from '../services/upload.js';
 import { randomToken, safeEqual } from '../utils/crypto.js';
@@ -14,6 +15,18 @@ import { apiError, apiOk } from '../utils/api.js';
 import { getAdminUser, getBaseUrl } from './helpers.js';
 
 const UPLOAD_ID_RE = /^[A-Za-z0-9_-]{8,64}$/;
+
+/**
+ * Fill in the origin country after the response is sent. Header-based countries
+ * are already resolved inline; this only covers the optional remote lookup.
+ */
+const backfillCountry = (fileId: number, req: FastifyRequest): void => {
+	void resolveCountry(req.ip, req.headers as Record<string, unknown>)
+		.then(code => {
+			if (code) setFileCountry(fileId, code);
+		})
+		.catch(error => logger.debug({ err: error }, 'Country resolution failed'));
+};
 
 const parseMaxDownloads = (value: unknown): number | null => {
 	const parsed = Number(value);
@@ -81,6 +94,7 @@ export const registerUploadRoutes = (app: FastifyInstance): void => {
 					tempPath,
 					name: originalName,
 					ip: req.ip,
+					country: countryFromHeaders(req.headers as Record<string, unknown>),
 					userId: getAdminUser(req)?.id ?? null,
 					ownerToken,
 					password: fields.password || null,
@@ -88,6 +102,7 @@ export const registerUploadRoutes = (app: FastifyInstance): void => {
 					expiresAt: clampExpiration(fields.expiration, settings.maxExpiration, settings.allowNeverExpiration)
 				});
 
+				if (!record.country) backfillCountry(record.id, req);
 				logger.info({ shortCode: record.shortCode, size: record.size }, 'Upload completed');
 				return apiOk(reply, uploadResponse(req, record, ownerToken));
 			} catch (error) {
@@ -172,6 +187,7 @@ export const registerUploadRoutes = (app: FastifyInstance): void => {
 					tempPath: assembled,
 					name,
 					ip: req.ip,
+					country: countryFromHeaders(req.headers as Record<string, unknown>),
 					userId: getAdminUser(req)?.id ?? null,
 					ownerToken,
 					password: body.password || null,
@@ -180,6 +196,7 @@ export const registerUploadRoutes = (app: FastifyInstance): void => {
 				});
 
 				logger.info({ shortCode: record.shortCode, size: record.size }, 'Chunked upload completed');
+				if (!record.country) backfillCountry(record.id, req);
 				return apiOk(reply, uploadResponse(req, record, ownerToken));
 			} catch (error) {
 				return handleUploadError(reply, error);

@@ -26,6 +26,17 @@ const writeTemp = (content: string | Buffer): string => {
 	return file;
 };
 
+const adminCookie = async (): Promise<string> => {
+	const login = await app.inject({
+		method: 'POST',
+		url: '/admin/login',
+		headers: { 'content-type': 'application/x-www-form-urlencoded' },
+		payload: 'username=tester&password=super-secret-123'
+	});
+	const session = login.cookies.find((c: any) => c.name === 'dopra_session');
+	return `dopra_session=${session.value}`;
+};
+
 const buildMultipart = (
 	fields: [string, string][],
 	file: { name: string; content: string | Buffer; contentType: string }
@@ -239,6 +250,65 @@ test('upload validation rejects blocked extensions and oversized files', async (
 	const upload = await import('../src/services/upload.js');
 	assert.throws(() => upload.validateUpload({ name: 'evil.exe', size: 10, mimeType: 'application/octet-stream' }), /blocked/i);
 	assert.throws(() => upload.validateUpload({ name: 'big.txt', size: 5 * 1024 * 1024 * 1024, mimeType: 'text/plain' }), /size/i);
+});
+
+test('reports lock once the reported file is deleted, and can be deleted', async () => {
+	const reports = await import('../src/services/reports.js');
+	const record = await finalizeUpload({ tempPath: writeTemp('reported'), name: 'reported.txt' });
+	reports.createReport({ fileId: record.id, shortCode: record.shortCode, reason: 'malware', ip: '10.0.0.9' });
+
+	const open = reports.listReports({ status: 'open' }).find((r: any) => r.shortCode === record.shortCode);
+	assert.ok(open);
+	assert.equal(open.fileExists, true);
+	assert.equal(reports.isReportEditable(open), true);
+
+	await files.deleteFile(record);
+
+	const locked = reports.getReport(open.id);
+	assert.equal(locked.fileExists, false);
+	assert.equal(locked.status, 'file_removed');
+	assert.equal(reports.isReportEditable(locked), false);
+
+	// Moderation is refused, but the entry itself can still be removed.
+	const cookie = await adminCookie();
+	const blocked = await app.inject({
+		method: 'POST',
+		url: `/admin/reports/${open.id}/action`,
+		headers: { cookie, 'content-type': 'application/x-www-form-urlencoded' },
+		payload: 'op=dismiss'
+	});
+	assert.equal(blocked.statusCode, 302);
+	assert.equal(reports.getReport(open.id).status, 'file_removed');
+
+	const removed = await app.inject({
+		method: 'POST',
+		url: `/admin/reports/${open.id}/action`,
+		headers: { cookie, 'content-type': 'application/x-www-form-urlencoded' },
+		payload: 'op=deleteReport'
+	});
+	assert.equal(removed.statusCode, 302);
+	assert.equal(reports.getReport(open.id), undefined);
+});
+
+test('intelligence snapshot groups uploads by resolved country', async () => {
+	const geo = await import('../src/services/geo.js');
+	assert.equal(geo.countryFromHeaders({ 'cf-ipcountry': 'id' }), 'ID');
+	assert.equal(geo.countryFromHeaders({ 'cf-ipcountry': 'XX' }), null);
+	assert.equal(geo.isPrivateIp('192.168.1.4'), true);
+	assert.equal(geo.isPrivateIp('8.8.8.8'), false);
+
+	const record = await finalizeUpload({ tempPath: writeTemp('geo'), name: 'geo.txt', country: 'ID' });
+	const snapshot = (await import('../src/services/intel.js')).getIntelSnapshot();
+	const indonesia = snapshot.countries.find((entry: any) => entry.code === 'ID');
+	assert.ok(indonesia);
+	assert.equal(indonesia.name, 'Indonesia');
+	assert.ok(indonesia.lat !== null && indonesia.lon !== null);
+	assert.ok(snapshot.events.some((event: any) => event.shortCode === record.shortCode && event.country === 'Indonesia'));
+
+	const cookie = await adminCookie();
+	const page = await app.inject({ method: 'GET', url: '/admin/intel', headers: { cookie } });
+	assert.equal(page.statusCode, 200);
+	assert.match(page.body, /Live origin map/);
 });
 
 test('short URLs honour X-Forwarded-Host/Proto behind a reverse proxy', async () => {

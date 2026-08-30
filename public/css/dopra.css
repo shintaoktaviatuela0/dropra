@@ -258,19 +258,100 @@ body.admin { display: block; }
 
 /* Row action menu */
 .row-menu { position: relative; }
-.row-menu > summary { list-style: none; display: inline-flex; }
+.row-menu > summary { list-style: none; display: inline-flex; cursor: pointer; }
 .row-menu > summary::-webkit-details-marker { display: none; }
 .row-menu-panel {
-	position: absolute; right: 0; z-index: 20; margin-top: 6px; min-width: 210px;
+	/* Pinned to the viewport by admin.js so `.table-wrap` overflow cannot clip it. */
+	position: fixed; top: 0; left: 0; z-index: 60; min-width: 230px; max-width: min(320px, calc(100vw - 16px));
 	background: var(--panel); border: 1px solid var(--panel-border); border-radius: var(--radius-sm);
-	box-shadow: var(--shadow); padding: 6px; display: flex; flex-direction: column; gap: 2px;
+	box-shadow: 0 12px 32px rgba(15, 23, 42, 0.22); padding: 6px; display: flex; flex-direction: column; gap: 2px;
+	overflow-y: auto; overscroll-behavior: contain;
 }
 .row-menu-panel form { margin: 0; }
-.menu-link { display: block; width: 100%; text-align: left; background: none; border: none; padding: 7px 10px; border-radius: 6px; font: inherit; font-size: 0.85rem; color: var(--text); cursor: pointer; }
+.menu-link { display: block; width: 100%; text-align: left; background: none; border: none; padding: 7px 10px; border-radius: 6px; font: inherit; font-size: 0.85rem; color: var(--text); cursor: pointer; white-space: nowrap; }
 .menu-link:hover { background: var(--hover); text-decoration: none; }
 .menu-link.danger { color: #dc2626; }
 .menu-inline { display: flex; gap: 4px; padding: 4px; }
 .menu-inline input, .menu-inline select { font-size: 0.8rem; padding: 5px; }
+.menu-sep { height: 1px; margin: 4px 2px; background: var(--panel-border); }
+.menu-note { margin: 2px 4px 6px; padding: 7px 8px; border-radius: 6px; background: var(--hover); color: var(--muted); font-size: 0.78rem; line-height: 1.4; white-space: normal; }
+
+/* Reports */
+.col-actions { text-align: right; }
+.cell-actions { width: 1%; text-align: right; }
+.cell-target { max-width: 220px; }
+.cell-sub { font-size: 0.76rem; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+.row-locked td { opacity: 0.72; }
+.row-locked:hover td { opacity: 1; }
+.target-gone code { text-decoration: line-through; opacity: 0.7; }
+.tag { display: inline-block; padding: 1px 7px; border-radius: 999px; font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+.tag-gone { background: rgba(220, 38, 38, 0.14); color: #dc2626; }
+.badge-file_removed { background: rgba(220, 38, 38, 0.12); color: #b91c1c; }
+.notice-warn { border-color: rgba(234, 179, 8, 0.4); background: rgba(234, 179, 8, 0.1); }
+.btn-danger { border-color: rgba(220, 38, 38, 0.4); color: #dc2626; }
+
+/* Intelligence map */
+.intel-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.intel-head h2 { margin: 0; flex: 1; }
+.live-dot { width: 9px; height: 9px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.55); animation: live-blink 2s ease-out infinite; }
+#intel-status.is-stale { color: #ca8a04; }
+.intel-map { border: 1px solid var(--panel-border); border-radius: var(--radius); overflow: hidden; background: linear-gradient(180deg, rgba(79, 70, 229, 0.07), transparent 70%); }
+.intel-map svg { display: block; width: 100%; height: auto; }
+.map-grid line { stroke: var(--panel-border); stroke-width: 0.6; opacity: 0.65; }
+.map-land circle { fill: currentColor; color: var(--muted); opacity: 0.35; }
+.map-marker { color: var(--accent); }
+.marker-core { fill: var(--accent); }
+.marker-pulse { fill: var(--accent); opacity: 0.28; transform-box: fill-box; transform-origin: center; animation: marker-pulse 2.8s ease-out infinite; animation-delay: var(--delay, 0s); }
+.marker-pulse-2 { animation-delay: calc(var(--delay, 0s) + 1.4s); }
+.map-arc { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; stroke-dasharray: 6 460; animation: arc-travel 2.4s ease-out forwards; }
+.map-ping { fill: none; stroke: var(--accent); stroke-width: 2; transform-box: fill-box; transform-origin: center; animation: ping-out 1.6s ease-out forwards; }
+
+@keyframes marker-pulse {
+	0% { transform: scale(0.35); opacity: 0.45; }
+	70% { transform: scale(1); opacity: 0; }
+	100% { transform: scale(1); opacity: 0; }
+}
+@keyframes arc-travel {
+	0% { stroke-dashoffset: 466; opacity: 0; }
+	15% { opacity: 1; }
+	100% { stroke-dashoffset: 0; opacity: 0; }
+}
+@keyframes ping-out {
+	0% { transform: scale(0.4); opacity: 0.9; }
+	100% { transform: scale(3.2); opacity: 0; }
+}
+@keyframes live-blink {
+	0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5); }
+	70% { box-shadow: 0 0 0 7px rgba(34, 197, 94, 0); }
+	100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+@keyframes stat-bump {
+	0% { transform: translateY(4px) scale(1.06); color: var(--accent); }
+	100% { transform: none; }
+}
+@keyframes feed-in {
+	0% { opacity: 0; transform: translateX(-10px); background: rgba(79, 70, 229, 0.14); }
+	100% { opacity: 1; transform: none; }
+}
+
+.stat-bump { animation: stat-bump 0.6s ease-out; }
+
+.geo-list, .feed-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.geo-row { display: grid; grid-template-columns: 22px minmax(0, 1fr) 90px 44px 66px; align-items: center; gap: 10px; font-size: 0.85rem; }
+.geo-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.geo-bar { height: 6px; border-radius: 999px; background: var(--hover); overflow: hidden; }
+.geo-bar-fill { display: block; height: 100%; border-radius: 999px; background: var(--accent); transition: width 0.6s ease; }
+.geo-count { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.geo-bytes { text-align: right; font-size: 0.76rem; }
+.feed-item { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto auto auto; align-items: center; gap: 10px; font-size: 0.84rem; padding: 4px 6px; border-radius: 8px; }
+.feed-country { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.feed-time { font-variant-numeric: tabular-nums; }
+.feed-new { animation: feed-in 0.7s ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+	.marker-pulse, .map-arc, .map-ping, .live-dot, .stat-bump, .feed-new { animation: none; }
+	.marker-pulse { opacity: 0.2; }
+}
 
 .settings-form { display: flex; flex-direction: column; gap: 18px; }
 .field-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }

@@ -62,6 +62,23 @@ export const renderAdminSettings = (settings: DopraSettings, username: string, o
 			</section>
 
 			<section class="panel">
+				<h2>Reports</h2>
+				<div class="field-grid">
+					${number('reportsRetentionDays', 'Delete resolved reports after (days)', settings.reportsRetentionDays, '0 disables automatic deletion')}
+					${checkbox('autoDeleteReportsOnFileDelete', 'Delete reports immediately when their file is deleted', settings.autoDeleteReportsOnFileDelete)}
+				</div>
+				<p class="hint">When this is off, reports for deleted files are kept as an audit trail and locked to read-only. Manual purge tools live on the <a href="/admin/reports">Reports</a> page.</p>
+			</section>
+
+			<section class="panel">
+				<h2>Intelligence</h2>
+				<div class="field-grid">
+					${checkbox('geoIpLookupEnabled', 'Resolve uploader country via ipwho.is', settings.geoIpLookupEnabled)}
+				</div>
+				<p class="hint">Country headers from Cloudflare, Vercel, Fastly and CloudFront are always used and stay local. Enabling the lookup sends the uploader IP address to a third party (results are cached for 30 days).</p>
+			</section>
+
+			<section class="panel">
 				<h2>Appearance</h2>
 				<div class="field-grid">
 					${select('theme', 'Default theme', settings.theme, [['system', 'System'], ['light', 'Light'], ['dark', 'Dark']])}

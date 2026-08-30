@@ -99,6 +99,32 @@ const migrations: Migration[] = [
 				);
 			`);
 		}
+	},
+	{
+		version: 2,
+		name: 'upload geography',
+		up(db) {
+			db.exec(`
+				ALTER TABLE files ADD COLUMN country TEXT;
+				CREATE INDEX idx_files_country ON files(country);
+
+				CREATE TABLE geo_cache (
+					ip TEXT PRIMARY KEY,
+					country TEXT,
+					resolvedAt INTEGER NOT NULL
+				);
+			`);
+		}
+	},
+	{
+		version: 3,
+		name: 'report resolution metadata',
+		up(db) {
+			db.exec(`
+				ALTER TABLE reports ADD COLUMN resolvedAt INTEGER;
+				ALTER TABLE reports ADD COLUMN resolution TEXT;
+			`);
+		}
 	}
 ];
 

@@ -15,6 +15,7 @@ const NAV = [
 	{ key: 'dashboard', label: 'Dashboard', href: '/admin' },
 	{ key: 'files', label: 'Files', href: '/admin/files' },
 	{ key: 'storage', label: 'Storage', href: '/admin/storage' },
+	{ key: 'intel', label: 'Intelligence', href: '/admin/intel' },
 	{ key: 'reports', label: 'Reports', href: '/admin/reports' },
 	{ key: 'settings', label: 'Settings', href: '/admin/settings' },
 	{ key: 'security', label: 'Security', href: '/admin/security' },
